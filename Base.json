@@ -1,0 +1,72 @@
+{	"titre":"Dark Souls",
+	"date":"24/08/2012",
+	"editeur":"BANDAI NAMCO Entertainement",
+	"prix":39.99,
+	"serie":"Souls",
+	"extensions":["Prepare to die edition"],
+	"description":"Préparez-vous à pénétrer dans un monde nouveau empreint de désespoir, doté d'un vaste univers tout en verticalité à explorer. Préparez-vous à découvrir une nouvelle trame mystérieuse, tissée autour du monde de Lordran. Mais avant tout, préparez-vous à mourir. Vous devrez faire face à des pièges mortels, des monstres aussi imposants que maléfiques, sans compter les démons et autres boss dragons gargantuesques dont la puissance n'est plus à prouver.",
+	"pegi":["16","Violence"],
+	"nb_joueurs":"1j à 3j",
+	"plateformes":["Xbox360","Ps3","Pc"],
+	"type":["Rpg","Dark Fantasy","Action","Difficile"],
+	"stock":28,
+	"genre":"jeu",
+	"commentaires":["Praise the sun !","Même pas peur.","Sauvez moi !","Impossible"]
+}
+{	"titre":"Dark Souls 2",
+	"date":"25/04/2014",
+	"editeur":"BANDAI NAMCO Entertainement",
+	"prix":39.99,
+	"serie":"Souls",
+	"extensions":["Crown of Sunken King","Crown of Old Iron King","Crown of Ivory King"],
+	"description":"Développé par FROM SOFTWARE, DARK SOULS™ II est la suite tant attendue du redoutable Dark Souls™, qui a connu un succès fracassant en 2012. Les terribles défis et les émotions intenses de cet action-rpg au caractère unique et old school ont enflammé l'imagination de nombreux joueurs à travers le monde.",
+	"pegi":["16","Violence"],
+	"nb_joueurs":"1j à 3j",
+	"plateformes":["Xbox360","Ps3","Pc"],
+	"type":["Rpg","Dark Fantasy","Action","Difficile"],
+	"stock":12,
+	"genre":"jeu",
+	"commentaires":["Encore un tour !","Ils sont dans les murs.","Pourquoi je suis là ?","#SeasonPass !"]
+}
+{	"titre":"Dark Souls 3",
+	"date":"11/04/2016",
+	"editeur":"BANDAI NAMCO Entertainement",
+	"prix":39.99,
+	"serie":"Souls",
+	"extensions":["Ashes of Ariandel","The Ringed City"],
+	"description":"Alors que les flammes vacillantes de votre feu de camp révèlent un monde en ruines, plongez dans un univers immense peuplé d'ennemis colossaux. Découvrez un monde épique et sombre au gameplay nerveux et aux combats toujours plus intenses. Fans inconditionnels ou nouveaux joueurs, laissez-vous submerger par les graphismes et le gameplay époustouflants. Désormais, seules les braises subsistent. Préparez-vous à embrasser les ténèbres... encore une fois !",
+	"pegi":["16","Violence"],
+	"nb_joueurs":"1j à 3j",
+	"plateformes":["XboxOne","Ps4","Pc"],
+	"type":["Rpg","Dark Fantasy","Action","Difficile"],
+	"stock":35,
+	"genre":"jeu",
+	"commentaires":["Rendez moi mon âme.","#TeamAriandel","Cette fois-ci c'est la bonne...","UN GEANT ?! SERIEUSEMENT ?!?"]
+}
+{	"titre":"Souls",
+	"date":"24/08/2012",
+	"editeur":"BANDAI NAMCO Entertainement",
+	"description":"La série Souls est une série de jeux vidéo de rôle-action créés et développés par FromSoftware. La série a débuté avec la sortie de Demon's Souls pour PlayStation 3 en 2009. Elle a été suivie par Dark Souls en 2011 et ses suites, Dark Souls II et Dark Souls III, respectivement en 2014 et 2016.",
+	"genre":"serie",
+	"jeux":["Dark Souls","Dark Souls 2","Dark Souls 3"]
+}
+
+{	"titre":"Tales Of",
+	"date":"1995",
+	"editeur":"Bandai Namco Games",
+	"description":"Tales of est une série de jeux vidéo de rôle développée par Bandai Namco Games, dont les différents titres d'épisodes commencent tous par les mots « Tales of ». Plusieurs épisodes de la série sont à l'origine d'anime et mangas dérivés.",
+	"genre":"serie"
+}
+
+{	"titre":"Oxygen not Included",
+	"date":"18/05/2017",
+	"editeur":"Klei Entertainement",
+	"prix":22.99,
+	"description":"Oxygen Not Included is a space-colony simulation game. Deep inside an alien space rock your industrious crew will need to master science, overcome strange new lifeforms, and harness incredible space tech to survive, and possibly, thrive.",
+	"nb_joueurs":"1j",
+	"plateformes":["Pc"],
+	"type":["Construction","Survie","Logistique","2D"],
+	"stock":84,
+	"genre":"jeu",
+	"commentaires":["A peine 294h dessus. Va falloir manger...","On est quel jour ?","Pas par là idiot !!","Comment ça suffocation ?"]
+}
