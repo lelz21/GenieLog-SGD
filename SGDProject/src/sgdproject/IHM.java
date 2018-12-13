@@ -13,6 +13,7 @@ import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoCursor;
 import com.mongodb.client.MongoDatabase;
 import static com.mongodb.client.model.Filters.eq;
+import java.util.ArrayList;
 import java.util.Arrays;
 import javax.swing.table.DefaultTableModel;
 import org.bson.Document;
@@ -26,8 +27,7 @@ public class IHM extends javax.swing.JFrame {
     /**
      * Creates new form IHM
      */
-    private MongoCollection<Document> d ;
-    
+    private MongoCollection<Document> d;
     public IHM() {
         initComponents();
         jTableAffichage.setModel(new javax.swing.table.DefaultTableModel(
@@ -236,39 +236,41 @@ public class IHM extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void rechercheButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_rechercheButtonActionPerformed
-        FindIterable fi;
-        if(genreComboBox.getSelectedIndex()==0){
-            fi=d.find(eq("genre","jeu"));
+        FindIterable fi=d.find();
+        MongoCursor mc = fi.iterator();
+        ArrayList<Document> documents = new ArrayList<>();
+        ArrayList<String> resultats = new ArrayList<>();
+        String s = jTextField1.getText();
+        if(genreComboBox.getSelectedIndex() == 0)
+        {
+            while(mc.hasNext())
+            {
+                Document d = (Document)mc.next();
+                if(d.get("genre").equals("jeu"))
+                    documents.add(d);
+            }
         }
-        else {
-            fi=d.find(eq("genre","serie"));
-        }
+        for(Document d : documents)
+        {
+               System.out.println(d.getInteger("titre").toString() + "");//resultats.add(s);
+        }    
         
-        switch (rechercheComboBox.getSelectedIndex()) {
-            case 0:
-                //descriptionTextArea.setText("Requete sur Titre avec : "+jTextField1.getText()+".");
-                fi = d.find(eq("titre",jTextField1.getText()));
-                break;
-            case 1:
-                //descriptionTextArea.setText("Requete sur Editeur avec : "+jTextField1.getText()+".");
-                fi = d.find(eq("editeur",jTextField1.getText()));
-                break;
-            default:
-                //descriptionTextArea.setText("Requete sur Type avec : "+jTextField1.getText()+".");
-                fi = d.find(eq("type",jTextField1.getText()));                
-                break;
-        }
+        for(String str : resultats)
+            System.out.println(str);
+        
         int nb_ligne_requete=10;
-        if((jTableAffichage.getModel().getRowCount()!=nb_ligne_requete)&&nb_ligne_requete!=0){
+        if((jTableAffichage.getModel().getRowCount() != nb_ligne_requete)&&nb_ligne_requete != 0)
+        {
             DefaultTableModel mt = (DefaultTableModel)(jTableAffichage.getModel());
             mt.setRowCount(nb_ligne_requete);
         }
-        MongoCursor mc = fi.iterator();
+        
         int c = 0;
                 
         while(mc.hasNext() && c<nb_ligne_requete)
         {
-            Object doc = ((Document)mc.next()).get("titre");
+            Document doc = ((Document)mc.next());
+            jTableAffichage.getModel().setValueAt(doc.get("titre"),c,0);
             jTableAffichage.getModel().setValueAt(doc,c,0);
             c++;
         }
