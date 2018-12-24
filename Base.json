@@ -70,3 +70,29 @@
 	"genre":"jeu",
 	"commentaires":["A peine 294h dessus. Va falloir manger...","On est quel jour ?","Pas par là idiot !!","Comment ça suffocation ?"]
 }
+{
+    "titre" : "Grand Theft Auto V",
+    "date" : "17/11/2013",
+    "editeur" : "Rockstar Games",
+    "prix" : 29.99,
+    "description" : "Au cœur de Los Santos, une métropole très largement inspirée de Los Angeles, en déclin et rongée par la crise, que peuplent gourous, starlettes et gloires du passé, trois criminels différents s'allient pour se sortir d'affaires : Franklin, un membre de gang de rue aux dents longues, Michael, un ancien braqueur dont la retraite est moins tranquille que prévu, et Trevor, un ancien pilote de chasse drogué et psychopathe. S'empêtrant toujours plus dans les ennuis et finissant parfois à court d'options, le trio n'a d'autre choix que de se lancer dans une série de braquages, aussi audacieux que dangereux, pour réussir et s'enrichir, tout en tentant de résoudre les problèmes du passé pour Michael et Trevor, dans un nouveau contexte, dix ans après leur séparation",
+    "nb_joueurs" : "1 joueur",
+    "plateformes" : [ 
+        "Xbox", 
+        "PlayStation", 
+        "Pc"
+    ],
+    "type" : [ 
+        "Open-world"
+    ],
+    "stock" : 69,
+    "genre" : "jeu",
+    "commentaires" : [ 
+        "Holy moly ce jeu est vieux", 
+        "Le IV était beaucoup mieux"
+    ],
+    "pegi" : [ 
+        "18", 
+        "Violence"
+    ]
+}
