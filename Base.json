@@ -11,7 +11,8 @@
 	"type":["Rpg","Dark Fantasy","Action","Difficile"],
 	"stock":28,
 	"genre":"jeu",
-	"commentaires":["Praise the sun !","Même pas peur.","Sauvez moi !","Impossible"]
+	"commentaires":["Praise the sun !","Même pas peur.","Sauvez moi !","Impossible"],
+ 	"notes" : [4, 3, 5, 1]
 }
 {	"titre":"Dark Souls 2",
 	"date":"25/04/2014",
@@ -26,7 +27,8 @@
 	"type":["Rpg","Dark Fantasy","Action","Difficile"],
 	"stock":12,
 	"genre":"jeu",
-	"commentaires":["Encore un tour !","Ils sont dans les murs.","Pourquoi je suis là ?","#SeasonPass !"]
+	"commentaires":["Encore un tour !","Ils sont dans les murs.","Pourquoi je suis là ?","#SeasonPass !"],
+ 	"notes":[2, 3, 1, 4]
 }
 {	"titre":"Dark Souls 3",
 	"date":"11/04/2016",
@@ -41,7 +43,8 @@
 	"type":["Rpg","Dark Fantasy","Action","Difficile"],
 	"stock":35,
 	"genre":"jeu",
-	"commentaires":["Rendez moi mon âme.","#TeamAriandel","Cette fois-ci c'est la bonne...","UN GEANT ?! SERIEUSEMENT ?!?"]
+	"commentaires":["Rendez moi mon âme.","#TeamAriandel","Cette fois-ci c'est la bonne...","UN GEANT ?! SERIEUSEMENT ?!?"],
+ 	"notes" : [2, 3, 5, 1]
 }
 {	"titre":"Souls",
 	"date":"24/08/2012",
@@ -68,7 +71,8 @@
 	"type":["Construction","Survie","Logistique","2D"],
 	"stock":84,
 	"genre":"jeu",
-	"commentaires":["A peine 294h dessus. Va falloir manger...","On est quel jour ?","Pas par là idiot !!","Comment ça suffocation ?"]
+	"commentaires":["A peine 294h dessus. Va falloir manger...","On est quel jour ?","Pas par là idiot !!","Comment ça suffocation ?"],
+ 	"notes": [2, 3, 4, 1]
 }
 {
     "titre" : "Grand Theft Auto V",
@@ -94,5 +98,6 @@
     "pegi" : [ 
         "18", 
         "Violence"
-    ]
+    ],
+"notes":[3, 2]
 }
