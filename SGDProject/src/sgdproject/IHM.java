@@ -8,15 +8,36 @@ package sgdproject;
 import com.mongodb.MongoClient;
 import com.mongodb.MongoCredential;
 import com.mongodb.ServerAddress;
+import com.mongodb.client.AggregateIterable;
 import com.mongodb.client.FindIterable;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoCursor;
 import com.mongodb.client.MongoDatabase;
-import static com.mongodb.client.model.Filters.eq;
+import com.mongodb.client.model.Aggregates;
+import com.mongodb.client.model.Accumulators;
+import com.mongodb.client.model.Projections;
+import com.mongodb.client.model.Filters;
+import com.mongodb.client.model.Updates;
+import com.mongodb.client.result.UpdateResult;
+import java.awt.Point;
+
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
+import javax.swing.JDialog;
+import javax.swing.JTable;
+import javax.swing.ListSelectionModel;
+import javax.swing.event.TableModelEvent;
+import javax.swing.event.TableModelListener;
 import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableColumn;
+import javax.swing.table.TableModel;
 import org.bson.Document;
+import org.bson.conversions.Bson;
 
 /**
  *
@@ -27,31 +48,138 @@ public class IHM extends javax.swing.JFrame {
     /**
      * Creates new form IHM
      */
-    private MongoCollection<Document> d;
+   private MongoCollection<Document> d;
     private IHMAdmin admin;
-    private boolean adminAffiche=false;
+    private boolean bool=false;
+    private boolean bb=false;
+    private final ArrayList<String> cols;
+    private ArrayList<Document> docs;
     public IHM() {
+        cols = new ArrayList<>(Arrays.asList("titre", "date", "editeur", "prix", "serie", "extensions", "pegi", "nb_joueurs", "plateformes", "type"));
+        docs = new ArrayList<Document>();
         initComponents();
-        jTableAffichage.setModel(new javax.swing.table.DefaultTableModel(
-            new Object [][] {
-                {null, null, null, null},
-                {null, null, null, null},
-                {null, null, null, null}
-            },
-            new String [] {
-                "Titre", "Date", "Editeur", "prix", "Nb Joueurs", "Serie", "Extensions", "Pegi", "Plateformes", "Types"
-            }
-        ));
+        
         char [] pass = new char[10];
         String s="vb394093"; pass = s.toCharArray();
         MongoCredential credential = MongoCredential.createCredential("vb394093", "vb394093", pass);
-        MongoClient client;
-        client = new MongoClient(new ServerAddress("mongo", 27017), Arrays.asList(credential));
+        //client = new MongoClient(new ServerAddress("mongo", 27017), Arrays.asList(credential));
+        MongoClient client = new MongoClient(new ServerAddress("localhost", 27017), Arrays.asList(credential));
         MongoDatabase db = client.getDatabase("vb394093");
         d = db.getCollection("Sgd_jeu");
+        FindIterable fi = d.find(Filters.eq("genre", "jeu"));
+        MongoCursor mc = fi.iterator();
+        recherche();
+        setTable((int)d.count(Filters.eq("genre", "jeu")), 0);
+        /*jTableAffichage.getModel().addTableModelListener(new TableModelListener() {
+            @Override
+            public void tableChanged(TableModelEvent e) {
+                int row = e.getFirstRow();
+                int column = e.getColumn();
+                TableModel model = (TableModel)e.getSource();
+                Object data = model.getValueAt(row, column);
+                System.out.println(data);
+             }
+        });*/
         admin=new IHMAdmin();
     }
-
+    public int recherche()
+    {
+        docs.clear();
+        Bson frech = Aggregates.match(Filters.regex((String)rechercheComboBox.getSelectedItem(), jTextField1.getText(), "i"));
+        
+        Bson fgenre = Aggregates.match(Filters.eq("genre", (String)genreComboBox.getSelectedItem()));
+       
+        Bson fplats = Aggregates.match(Filters.in("plateformes", 
+                XBoxCheckBox.isSelected()? "Xbox" : "null", 
+                PsCheckBox.isSelected()? "PlaySation" : "null",
+                PcCheckBox.isSelected()? "Pc" : "null",
+                NintendoCheckBox.isSelected()? "Nintendo" : "null"));
+        
+        Bson fprix = Aggregates.match(Filters.lt("prix", jSlider1.getValue()));
+        
+        Bson fnbJ = Aggregates.match(nbJoueurComboBox.getSelectedIndex() != 0 ?
+                Filters.in("nb_joueurs", (String)nbJoueurComboBox.getSelectedItem()) :
+                Filters.regex("nb_joueurs", ""));
+        
+        AggregateIterable iter = d.aggregate(Arrays.asList(fgenre, frech, fplats, fprix, fnbJ));
+        MongoCursor mc = iter.iterator();
+        int n = 0;
+        while(mc.hasNext())
+        {
+            docs.add((Document)mc.next());
+            n++;
+        }
+        return n;
+    }
+    public void setTable(int n, int row)
+    {
+        DefaultTableModel dm = (DefaultTableModel)jTableAffichage.getModel();
+        dm.setRowCount(n);
+        jTableAffichage.setModel(dm);
+        
+        int i = 0;
+        for (Document doc : docs)
+        {
+            int j = 0;
+            for (String col : cols)
+            {
+                jTableAffichage.setValueAt(doc.get(col), i, j);
+                j++;
+            }
+            i++;
+        }
+        if (!docs.isEmpty())
+        {
+            descriptionTextArea.setText(docs.get(row).get("description", String.class));
+            commentaireList.setListData((String[])docs.get(row).get("commentaires", ArrayList.class).toArray(new String[0]));
+            ArrayList note = docs.get(row).get("notes", ArrayList.class);    
+            double s = 0;
+            for (Object o : note)
+                s = s + Double.valueOf(o + "");
+            jLabel4.setText("Note : " + (s / note.size()));
+        }
+    }
+    public int displayed()
+    {
+        int s = jTableAffichage.getSelectedRow();
+        return s > 0? s : 0;
+    }
+    public Object[][] getObjects()
+    {
+        Object[][] obs = new Object[docs.size()][];
+        int i = 0;
+        for (Document doc : docs)
+        {
+            obs[i] = new Object[doc.size()];
+            int j = 0;
+            for (String col : cols)
+            {
+                obs[i][j] = doc.get(col);
+                j++;
+            }
+            i++;
+        }
+        return obs;
+    }
+    public boolean ValidRow(int i)
+    {
+        ArrayList<Integer> l = new ArrayList<>(Arrays.asList(0, 1, 2, 3, 7, 8));
+        for (int j = 0; j < jTableAffichage.getColumnCount(); j++)
+        {
+            System.out.println(i + " " + j);
+            if (jTableAffichage.getValueAt(i, l.get(i)) == null)
+               return false;
+        }
+        return true;
+    }
+    public boolean ValidRows()
+    {
+        
+        for(int i = 0; i < jTableAffichage.getRowCount(); i++)
+           if (!ValidRow(i))
+               return false; 
+        return true;
+    }
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -82,11 +210,22 @@ public class IHM extends javax.swing.JFrame {
         jLabel1 = new javax.swing.JLabel();
         LabelPrix = new javax.swing.JLabel();
         jButton1 = new javax.swing.JButton();
+        jButton2 = new javax.swing.JButton();
+        jSlider2 = new javax.swing.JSlider();
+        jLabel2 = new javax.swing.JLabel();
+        jLabel3 = new javax.swing.JLabel();
+        jLabel4 = new javax.swing.JLabel();
+        jButton3 = new javax.swing.JButton();
+        jButton3.setVisible(false);
+        jButton4 = new javax.swing.JButton();
+        jButton4.setVisible(false);
+        jButton5 = new javax.swing.JButton();
+        jButton3.setVisible(false);
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setTitle("Mediatheque");
 
-        jTextField1.setText("Recherche");
+        jTextField1.setToolTipText("");
 
         rechercheButton.setText("Go");
         rechercheButton.addActionListener(new java.awt.event.ActionListener() {
@@ -95,18 +234,18 @@ public class IHM extends javax.swing.JFrame {
             }
         });
 
-        rechercheComboBox.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Titre", "Editeur", "Type" }));
+        rechercheComboBox.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "titre", "editeur", "type" }));
 
         descriptionTextArea.setEditable(false);
         descriptionTextArea.setColumns(20);
+        descriptionTextArea.setLineWrap(true);
         descriptionTextArea.setRows(5);
-        descriptionTextArea.setText("Description");
+        descriptionTextArea.setWrapStyleWord(true);
+        descriptionTextArea.setCursor(new java.awt.Cursor(java.awt.Cursor.DEFAULT_CURSOR));
         jScrollPane2.setViewportView(descriptionTextArea);
 
-        commentaireTextArea.setEditable(false);
         commentaireTextArea.setColumns(20);
         commentaireTextArea.setRows(5);
-        commentaireTextArea.setText("Commentaire");
         commentaireTextArea.setToolTipText("");
         commentaireTextArea.setAutoscrolls(false);
         jScrollPane3.setViewportView(commentaireTextArea);
@@ -114,33 +253,54 @@ public class IHM extends javax.swing.JFrame {
         jTableAffichage.setAutoCreateRowSorter(true);
         jTableAffichage.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
-                {null, null, null, null},
-                {null, null, null, null},
-                {null, null, null, null},
-                {null, null, null, null}
+
             },
             new String [] {
-                "Title 1", "Title 2", "Title 3", "Title 4"
+                "Titre", "Date", "Ëditeur", "Prix", "Serie", "Extensions", "Pegi", "Nb_joueurs", "Plateformes", "Type"
             }
-        ));
-        jTableAffichage.setAutoscrolls(false);
-        jScrollPane1.setViewportView(jTableAffichage);
+        ) {
+            boolean[] canEdit = new boolean [] {
+                false, false, false, false, false, false, false, false, false, false
+            };
 
-        commentaireList.setModel(new javax.swing.AbstractListModel<String>() {
-            String[] strings = { "Item 1", "Item 2", "Item 3", "Item 4", "Item 5" };
-            public int getSize() { return strings.length; }
-            public String getElementAt(int i) { return strings[i]; }
+            public boolean isCellEditable(int rowIndex, int columnIndex) {
+                return canEdit [columnIndex];
+            }
         });
+        jTableAffichage.setAutoscrolls(false);
+        jTableAffichage.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                jTableAffichageMouseClicked(evt);
+            }
+        });
+        jScrollPane1.setViewportView(jTableAffichage);
+        if (jTableAffichage.getColumnModel().getColumnCount() > 0) {
+            jTableAffichage.getColumnModel().getColumn(0).setResizable(false);
+            jTableAffichage.getColumnModel().getColumn(1).setResizable(false);
+            jTableAffichage.getColumnModel().getColumn(2).setResizable(false);
+            jTableAffichage.getColumnModel().getColumn(3).setResizable(false);
+            jTableAffichage.getColumnModel().getColumn(4).setResizable(false);
+            jTableAffichage.getColumnModel().getColumn(5).setResizable(false);
+            jTableAffichage.getColumnModel().getColumn(6).setResizable(false);
+            jTableAffichage.getColumnModel().getColumn(7).setResizable(false);
+            jTableAffichage.getColumnModel().getColumn(8).setResizable(false);
+            jTableAffichage.getColumnModel().getColumn(9).setResizable(false);
+        }
+
         jScrollPane4.setViewportView(commentaireList);
 
-        nbJoueurComboBox.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "1 joueur", "1 à 2 joueurs", "1 à 3 joueurs", "1 à 4 joueurs" }));
+        nbJoueurComboBox.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Tous", "1 joueur", "1 à 2 joueurs", "1 à 3 joueurs", "1 à 4 joueurs" }));
 
+        XBoxCheckBox.setSelected(true);
         XBoxCheckBox.setText("XBox");
 
+        PsCheckBox.setSelected(true);
         PsCheckBox.setText("PlayStation");
 
+        NintendoCheckBox.setSelected(true);
         NintendoCheckBox.setText("Nintendo");
 
+        PcCheckBox.setSelected(true);
         PcCheckBox.setText("Pc");
 
         jSlider1.setMaximum(800);
@@ -151,7 +311,7 @@ public class IHM extends javax.swing.JFrame {
             }
         });
 
-        genreComboBox.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Jeu", "Serie" }));
+        genreComboBox.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "jeu", "serie" }));
 
         jLabel1.setText("Prix : ");
 
@@ -161,6 +321,49 @@ public class IHM extends javax.swing.JFrame {
         jButton1.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jButton1ActionPerformed(evt);
+            }
+        });
+
+        jButton2.setText("commenter");
+        jButton2.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton2ActionPerformed(evt);
+            }
+        });
+
+        jSlider2.setMaximum(5);
+        jSlider2.setValue(4);
+        jSlider2.addChangeListener(new javax.swing.event.ChangeListener() {
+            public void stateChanged(javax.swing.event.ChangeEvent evt) {
+                jSlider2StateChanged(evt);
+            }
+        });
+
+        jLabel2.setText("Votre note :");
+
+        jLabel3.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        jLabel3.setText(jSlider2.getValue() + "");
+
+        jLabel4.setText("Note :");
+
+        jButton3.setText("+");
+        jButton3.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton3ActionPerformed(evt);
+            }
+        });
+
+        jButton4.setText("-");
+        jButton4.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton4ActionPerformed(evt);
+            }
+        });
+
+        jButton5.setText("ok");
+        jButton5.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton5ActionPerformed(evt);
             }
         });
 
@@ -174,37 +377,64 @@ public class IHM extends javax.swing.JFrame {
                     .addComponent(jScrollPane1)
                     .addGroup(layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 453, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(jScrollPane3, javax.swing.GroupLayout.PREFERRED_SIZE, 453, javax.swing.GroupLayout.PREFERRED_SIZE))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addComponent(jScrollPane4, javax.swing.GroupLayout.DEFAULT_SIZE, 504, Short.MAX_VALUE))
-                    .addGroup(layout.createSequentialGroup()
-                        .addComponent(rechercheComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(18, 18, 18)
-                        .addComponent(nbJoueurComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(25, 25, 25)
-                        .addComponent(XBoxCheckBox)
+                            .addGroup(layout.createSequentialGroup()
+                                .addComponent(jScrollPane3, javax.swing.GroupLayout.PREFERRED_SIZE, 344, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addGap(18, 18, 18)
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addGroup(layout.createSequentialGroup()
+                                        .addComponent(jLabel2)
+                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                        .addComponent(jLabel3)
+                                        .addGap(0, 0, Short.MAX_VALUE))
+                                    .addComponent(jButton2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                    .addComponent(jSlider2, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)))
+                            .addGroup(layout.createSequentialGroup()
+                                .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 453, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(jButton5, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addGap(0, 0, Short.MAX_VALUE)))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(PsCheckBox)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addComponent(NintendoCheckBox)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addComponent(PcCheckBox)
-                        .addGap(18, 18, 18)
-                        .addComponent(jLabel1)
-                        .addGap(2, 2, 2)
-                        .addComponent(jSlider1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(LabelPrix)
-                        .addGap(0, 0, Short.MAX_VALUE))
-                    .addGroup(layout.createSequentialGroup()
-                        .addComponent(jTextField1, javax.swing.GroupLayout.PREFERRED_SIZE, 387, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addComponent(genreComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(18, 18, 18)
-                        .addComponent(rechercheButton)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(layout.createSequentialGroup()
+                                .addGap(0, 0, Short.MAX_VALUE)
+                                .addComponent(jLabel4, javax.swing.GroupLayout.PREFERRED_SIZE, 80, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addGroup(layout.createSequentialGroup()
+                                .addComponent(jScrollPane4, javax.swing.GroupLayout.PREFERRED_SIZE, 447, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addGap(0, 0, Short.MAX_VALUE))))
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(layout.createSequentialGroup()
+                                .addComponent(jTextField1, javax.swing.GroupLayout.PREFERRED_SIZE, 387, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                                .addComponent(genreComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addGap(18, 18, 18)
+                                .addComponent(rechercheButton))
+                            .addGroup(layout.createSequentialGroup()
+                                .addComponent(rechercheComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addGap(18, 18, 18)
+                                .addComponent(nbJoueurComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addGap(25, 25, 25)
+                                .addComponent(XBoxCheckBox)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(PsCheckBox)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                                .addComponent(NintendoCheckBox)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                                .addComponent(PcCheckBox)
+                                .addGap(18, 18, 18)
+                                .addComponent(jLabel1)
+                                .addGap(2, 2, 2)
+                                .addComponent(jSlider1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(LabelPrix)))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(jButton1)))
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                            .addGroup(layout.createSequentialGroup()
+                                .addComponent(jButton3, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(jButton4, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addGap(1, 1, 1))
+                            .addComponent(jButton1))))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -213,12 +443,15 @@ public class IHM extends javax.swing.JFrame {
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                     .addGroup(layout.createSequentialGroup()
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                            .addComponent(jTextField1, javax.swing.GroupLayout.PREFERRED_SIZE, 31, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(rechercheButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addComponent(genreComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(jButton1))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                                .addComponent(jTextField1, javax.swing.GroupLayout.PREFERRED_SIZE, 31, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addComponent(rechercheButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                .addComponent(genreComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                                .addGap(0, 0, Short.MAX_VALUE)
+                                .addComponent(jButton1)))
+                        .addGap(18, 18, 18)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                             .addComponent(rechercheComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addComponent(nbJoueurComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -229,18 +462,41 @@ public class IHM extends javax.swing.JFrame {
                             .addComponent(jLabel1)))
                     .addGroup(layout.createSequentialGroup()
                         .addGap(0, 0, Short.MAX_VALUE)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(LabelPrix)
-                            .addComponent(jSlider1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))))
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                .addComponent(LabelPrix)
+                                .addComponent(jSlider1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addGroup(layout.createSequentialGroup()
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                                    .addComponent(jButton3)
+                                    .addComponent(jButton4))
+                                .addGap(10, 10, 10)))))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 133, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                     .addGroup(layout.createSequentialGroup()
-                        .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 97, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jScrollPane3, javax.swing.GroupLayout.PREFERRED_SIZE, 97, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addComponent(jScrollPane4))
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(layout.createSequentialGroup()
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 129, Short.MAX_VALUE)
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                                    .addComponent(jLabel2)
+                                    .addComponent(jLabel3))
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                .addComponent(jSlider2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addGroup(layout.createSequentialGroup()
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                .addComponent(jScrollPane4, javax.swing.GroupLayout.PREFERRED_SIZE, 165, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(jButton2)
+                            .addComponent(jLabel4, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
+                    .addGroup(layout.createSequentialGroup()
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                            .addComponent(jButton5)
+                            .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 97, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addGap(19, 19, 19)
+                        .addComponent(jScrollPane3, javax.swing.GroupLayout.PREFERRED_SIZE, 86, javax.swing.GroupLayout.PREFERRED_SIZE)))
                 .addContainerGap())
         );
 
@@ -248,46 +504,8 @@ public class IHM extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void rechercheButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_rechercheButtonActionPerformed
-        FindIterable fi=d.find();
-        MongoCursor mc = fi.iterator();
-        ArrayList<Document> documents = new ArrayList<>();
-        ArrayList<String> resultats = new ArrayList<>();
-        String s = jTextField1.getText();
-        if(genreComboBox.getSelectedIndex() == 0)
-        {
-            while(mc.hasNext())
-            {
-                Document d = (Document)mc.next();
-                if(d.get("genre").equals("jeu"))
-                    documents.add(d);
-            }
-        }
-        for(Document d : documents)
-        {
-               System.out.println(d.getInteger("titre").toString() + "");//resultats.add(s);
-        }    
-        
-        for(String str : resultats)
-            System.out.println(str);
-        
-        int nb_ligne_requete=10;
-        if((jTableAffichage.getModel().getRowCount() != nb_ligne_requete)&&nb_ligne_requete != 0)
-        {
-            DefaultTableModel mt = (DefaultTableModel)(jTableAffichage.getModel());
-            mt.setRowCount(nb_ligne_requete);
-        }
-        
-        int c = 0;
-                
-        while(mc.hasNext() && c<nb_ligne_requete)
-        {
-            Document doc = ((Document)mc.next());
-            jTableAffichage.getModel().setValueAt(doc.get("titre"),c,0);
-            jTableAffichage.getModel().setValueAt(doc,c,0);
-            c++;
-        }
-        // affichage comm
-        // affichage description
+        int n = recherche();
+        setTable(n, displayed());
     }//GEN-LAST:event_rechercheButtonActionPerformed
 
     private void jSlider1StateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_jSlider1StateChanged
@@ -295,11 +513,116 @@ public class IHM extends javax.swing.JFrame {
     }//GEN-LAST:event_jSlider1StateChanged
 
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
-        adminAffiche=!adminAffiche;
-        admin.setVisible(adminAffiche);
-        admin.setEnabled(adminAffiche);
-    }//GEN-LAST:event_jButton1ActionPerformed
+    jButton3.setVisible(!bool);
+    jButton4.setVisible(!bool);
+    descriptionTextArea.setEditable(!bool);
+    jTableAffichage.setModel(new javax.swing.table.DefaultTableModel(getObjects(), new String [] {"Titre", "Date", "Editeur", "Prix", "Serie", "Extensions", "Pegi", "Nb Joueurs", "Plateformes", "Types"}) {
+    @Override public boolean isCellEditable(int rowIndex, int columnIndex) { return bool; }
+    });
     
+    jTableAffichage.getModel().addTableModelListener(new TableModelListener() {
+        @Override
+        public void tableChanged(TableModelEvent e) {
+            if (!bb)
+            {
+                String s = jTableAffichage.getValueAt(e.getFirstRow(), e.getColumn()).toString();
+                if (e.getFirstRow() < docs.size())
+                { 
+                    if (s.charAt(0) == '[' && s.charAt(s.length() - 1) == ']')
+                    {
+                        List l = Arrays.asList(s.replaceAll("\\[", "").replaceAll("\\]", "").split(", "));
+                        d.updateOne(Filters.eq("titre", docs.get(displayed()).getString("titre")), Updates.set(cols.get(e.getColumn()), l));
+                    }
+                    else
+                        d.updateOne(Filters.eq("titre", docs.get(displayed()).getString("titre")), Updates.set(cols.get(e.getColumn()), jTableAffichage.getValueAt(e.getFirstRow(), e.getColumn())));
+                }
+                else
+                {
+                    if (ValidRow(e.getFirstRow()))
+                    {
+                        System.out.println("valid");
+                        jButton5.setVisible(true);
+                    }
+                    else
+                        System.out.println("non valid");
+                }
+            }
+        }
+    });
+    if (!bool)
+            jButton1.setText("Déconnexion");
+       else
+            jButton1.setText("Administrateur");
+       bool = !bool;
+    }//GEN-LAST:event_jButton1ActionPerformed
+
+    private void jTableAffichageMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_jTableAffichageMouseClicked
+        if (jTableAffichage.rowAtPoint(evt.getPoint()) < docs.size())
+        {
+            descriptionTextArea.setText(docs.get(jTableAffichage.rowAtPoint(evt.getPoint())).get("description", String.class));
+            commentaireList.setListData((String[])docs.get(jTableAffichage.rowAtPoint(evt.getPoint())).get("commentaires", ArrayList.class).toArray(new String[0]));
+            ArrayList note = docs.get(jTableAffichage.rowAtPoint(evt.getPoint())).get("notes", ArrayList.class);
+            double s = 0;
+            for (Object n : note)
+                s = s + Double.valueOf(n + "");
+            jLabel4.setText("Note : " + (s / note.size()));
+        }
+        else
+        {
+            descriptionTextArea.setText("");
+            commentaireList.setListData("".split(""));
+            jLabel4.setText("");
+        }
+    }//GEN-LAST:event_jTableAffichageMouseClicked
+
+    private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
+        if (!commentaireTextArea.getText().isEmpty())
+        {
+            d.updateOne(Filters.eq("titre", docs.get(displayed()).getString("titre")), Updates.push("commentaires", commentaireTextArea.getText()));
+            d.updateOne(Filters.eq("titre", docs.get(displayed()).getString("titre")), Updates.push("notes", jSlider2.getValue()));
+            recherche();
+            commentaireList.setListData((String[])docs.get(displayed()).get("commentaires", ArrayList.class).toArray(new String[0]));
+            ArrayList note = docs.get(displayed()).get("notes", ArrayList.class);
+            double s = 0;
+            for (Object n : note)
+                s = s + Double.valueOf(n + "");
+            jLabel4.setText("Note : " + (s / note.size()));
+        }
+    }//GEN-LAST:event_jButton2ActionPerformed
+
+    private void jSlider2StateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_jSlider2StateChanged
+        jLabel3.setText(jSlider2.getValue() + "");
+    }//GEN-LAST:event_jSlider2StateChanged
+
+    private void jButton4ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton4ActionPerformed
+        bb = true;
+        DefaultTableModel dm = (DefaultTableModel)jTableAffichage.getModel();
+        dm.removeRow(jTableAffichage.getSelectedRow());
+        jTableAffichage.setModel(dm);
+        bb = false;
+    }//GEN-LAST:event_jButton4ActionPerformed
+
+    private void jButton5ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton5ActionPerformed
+        Document doc = new Document();
+       
+        for (int i = 0; i < jTableAffichage.getColumnCount(); i++)
+        {
+           if (!(jTableAffichage.getValueAt(jTableAffichage.getRowCount() - 1, i) == null))
+               doc.append(cols.get(i), jTableAffichage.getValueAt(jTableAffichage.getRowCount() - 1, i));
+        }
+        doc.append("description", descriptionTextArea.getText());
+        d.insertOne(doc);
+    }//GEN-LAST:event_jButton5ActionPerformed
+
+    private void jButton3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton3ActionPerformed
+        if (ValidRows())
+        {
+            bb = true;
+            int n = recherche();
+            setTable(n + 1, displayed());
+            bb = false;
+        }
+    }//GEN-LAST:event_jButton3ActionPerformed
     /**
      * @param args the command line arguments
      */
@@ -343,12 +666,20 @@ public class IHM extends javax.swing.JFrame {
     private javax.swing.JTextArea descriptionTextArea;
     private javax.swing.JComboBox<String> genreComboBox;
     private javax.swing.JButton jButton1;
+    private javax.swing.JButton jButton2;
+    private javax.swing.JButton jButton3;
+    private javax.swing.JButton jButton4;
+    private javax.swing.JButton jButton5;
     private javax.swing.JLabel jLabel1;
+    private javax.swing.JLabel jLabel2;
+    private javax.swing.JLabel jLabel3;
+    private javax.swing.JLabel jLabel4;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JScrollPane jScrollPane3;
     private javax.swing.JScrollPane jScrollPane4;
     private javax.swing.JSlider jSlider1;
+    private javax.swing.JSlider jSlider2;
     private javax.swing.JTable jTableAffichage;
     private javax.swing.JTextField jTextField1;
     private javax.swing.JComboBox<String> nbJoueurComboBox;
