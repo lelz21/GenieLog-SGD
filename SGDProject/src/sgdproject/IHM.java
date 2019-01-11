@@ -61,10 +61,10 @@ public class IHM extends javax.swing.JFrame {
         
         char [] pass = new char[10];
         String s="vb394093"; pass = s.toCharArray();
-        MongoCredential credential = MongoCredential.createCredential("vb394093", "vb394093", pass);
-        //client = new MongoClient(new ServerAddress("mongo", 27017), Arrays.asList(credential));
-        MongoClient client = new MongoClient(new ServerAddress("localhost", 27017), Arrays.asList(credential));
-        MongoDatabase db = client.getDatabase("vb394093");
+        MongoCredential credential = MongoCredential.createCredential("ab750519", "ab750519", pass);
+        MongoClient client = new MongoClient(new ServerAddress("mongo", 27017), Arrays.asList(credential));
+        //MongoClient client = new MongoClient(new ServerAddress("localhost", 27017), Arrays.asList(credential));
+        MongoDatabase db = client.getDatabase("ab750519");
         d = db.getCollection("Sgd_jeu");
         FindIterable fi = d.find(Filters.eq("genre", "jeu"));
         MongoCursor mc = fi.iterator();
