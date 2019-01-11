@@ -52,6 +52,7 @@ public class IHM extends javax.swing.JFrame {
     private IHMAdmin admin;
     private boolean bool=false;
     private boolean bb=false;
+    private boolean pansement = false;
     private final ArrayList<String> cols;
     private ArrayList<Document> docs;
     public IHM() {
@@ -61,10 +62,10 @@ public class IHM extends javax.swing.JFrame {
         
         char [] pass = new char[10];
         String s="vb394093"; pass = s.toCharArray();
-        MongoCredential credential = MongoCredential.createCredential("ab750519", "ab750519", pass);
+        MongoCredential credential = MongoCredential.createCredential("vb394093", "vb394093", pass);
         MongoClient client = new MongoClient(new ServerAddress("mongo", 27017), Arrays.asList(credential));
         //MongoClient client = new MongoClient(new ServerAddress("localhost", 27017), Arrays.asList(credential));
-        MongoDatabase db = client.getDatabase("ab750519");
+        MongoDatabase db = client.getDatabase("vb394093");
         d = db.getCollection("Sgd_jeu");
         FindIterable fi = d.find(Filters.eq("genre", "jeu"));
         MongoCursor mc = fi.iterator();
@@ -114,6 +115,7 @@ public class IHM extends javax.swing.JFrame {
     public void setTable(int n, int row)
     {
         DefaultTableModel dm = (DefaultTableModel)jTableAffichage.getModel();
+        System.out.println(n + " " + docs.size());
         dm.setRowCount(n);
         jTableAffichage.setModel(dm);
         
@@ -123,6 +125,7 @@ public class IHM extends javax.swing.JFrame {
             int j = 0;
             for (String col : cols)
             {
+                System.out.println(i + " " + j);
                 jTableAffichage.setValueAt(doc.get(col), i, j);
                 j++;
             }
@@ -220,7 +223,6 @@ public class IHM extends javax.swing.JFrame {
         jButton4 = new javax.swing.JButton();
         jButton4.setVisible(false);
         jButton5 = new javax.swing.JButton();
-        jButton3.setVisible(false);
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setTitle("Mediatheque");
@@ -366,6 +368,7 @@ public class IHM extends javax.swing.JFrame {
                 jButton5ActionPerformed(evt);
             }
         });
+        jButton5.setVisible(false);
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
@@ -381,13 +384,13 @@ public class IHM extends javax.swing.JFrame {
                                 .addComponent(jScrollPane3, javax.swing.GroupLayout.PREFERRED_SIZE, 344, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addGap(18, 18, 18)
                                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addGroup(layout.createSequentialGroup()
+                                    .addComponent(jButton2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                    .addComponent(jSlider2, javax.swing.GroupLayout.DEFAULT_SIZE, 231, Short.MAX_VALUE)
+                                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                                         .addComponent(jLabel2)
                                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                        .addComponent(jLabel3)
-                                        .addGap(0, 0, Short.MAX_VALUE))
-                                    .addComponent(jButton2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                    .addComponent(jSlider2, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)))
+                                        .addComponent(jLabel3, javax.swing.GroupLayout.PREFERRED_SIZE, 115, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                        .addGap(0, 0, Short.MAX_VALUE))))
                             .addGroup(layout.createSequentialGroup()
                                 .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 453, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -395,12 +398,8 @@ public class IHM extends javax.swing.JFrame {
                                 .addGap(0, 0, Short.MAX_VALUE)))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addGroup(layout.createSequentialGroup()
-                                .addGap(0, 0, Short.MAX_VALUE)
-                                .addComponent(jLabel4, javax.swing.GroupLayout.PREFERRED_SIZE, 80, javax.swing.GroupLayout.PREFERRED_SIZE))
-                            .addGroup(layout.createSequentialGroup()
-                                .addComponent(jScrollPane4, javax.swing.GroupLayout.PREFERRED_SIZE, 447, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addGap(0, 0, Short.MAX_VALUE))))
+                            .addComponent(jScrollPane4, javax.swing.GroupLayout.PREFERRED_SIZE, 447, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(jLabel4, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 102, javax.swing.GroupLayout.PREFERRED_SIZE)))
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addGroup(layout.createSequentialGroup()
@@ -471,25 +470,25 @@ public class IHM extends javax.swing.JFrame {
                                     .addComponent(jButton3)
                                     .addComponent(jButton4))
                                 .addGap(10, 10, 10)))))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 133, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                     .addGroup(layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addGroup(layout.createSequentialGroup()
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 129, Short.MAX_VALUE)
-                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                                    .addComponent(jLabel2)
-                                    .addComponent(jLabel3))
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                                    .addComponent(jLabel3)
+                                    .addComponent(jLabel2))
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                 .addComponent(jSlider2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                             .addGroup(layout.createSequentialGroup()
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                                 .addComponent(jScrollPane4, javax.swing.GroupLayout.PREFERRED_SIZE, 165, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                             .addComponent(jButton2)
-                            .addComponent(jLabel4, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
+                            .addComponent(jLabel4, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 8, Short.MAX_VALUE))
                     .addGroup(layout.createSequentialGroup()
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
@@ -504,8 +503,10 @@ public class IHM extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void rechercheButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_rechercheButtonActionPerformed
+        pansement = true;
         int n = recherche();
         setTable(n, displayed());
+        pansement = false;
     }//GEN-LAST:event_rechercheButtonActionPerformed
 
     private void jSlider1StateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_jSlider1StateChanged
@@ -519,20 +520,26 @@ public class IHM extends javax.swing.JFrame {
     jTableAffichage.setModel(new javax.swing.table.DefaultTableModel(getObjects(), new String [] {"Titre", "Date", "Editeur", "Prix", "Serie", "Extensions", "Pegi", "Nb Joueurs", "Plateformes", "Types"}) {
     @Override public boolean isCellEditable(int rowIndex, int columnIndex) { return bool; }
     });
-    
+    rechercheButton.setEnabled(bool);
+    if (!bool)
+    {
     jTableAffichage.getModel().addTableModelListener(new TableModelListener() {
         @Override
         public void tableChanged(TableModelEvent e) {
             if (!bb)
             {
                 String s = jTableAffichage.getValueAt(e.getFirstRow(), e.getColumn()).toString();
+                
                 if (e.getFirstRow() < docs.size())
-                { 
+                {   
+                    System.out.println(jTableAffichage.getValueAt(e.getFirstRow(), 0));
                     if (s.charAt(0) == '[' && s.charAt(s.length() - 1) == ']')
                     {
                         List l = Arrays.asList(s.replaceAll("\\[", "").replaceAll("\\]", "").split(", "));
                         d.updateOne(Filters.eq("titre", docs.get(displayed()).getString("titre")), Updates.set(cols.get(e.getColumn()), l));
                     }
+                    else if(e.getColumn() == 3)
+                        d.updateOne(Filters.eq("titre", docs.get(displayed()).getString("titre")), Updates.set(cols.get(e.getColumn()), (Double)jTableAffichage.getValueAt(e.getFirstRow(), e.getColumn())));
                     else
                         d.updateOne(Filters.eq("titre", docs.get(displayed()).getString("titre")), Updates.set(cols.get(e.getColumn()), jTableAffichage.getValueAt(e.getFirstRow(), e.getColumn())));
                 }
@@ -549,18 +556,24 @@ public class IHM extends javax.swing.JFrame {
             }
         }
     });
+    }
     if (!bool)
             jButton1.setText("Déconnexion");
-       else
-            jButton1.setText("Administrateur");
-       bool = !bool;
+    else
+     {
+         int n = recherche();
+         setTable(n, displayed());
+         jButton1.setText("Administrateur");
+     }
+     bool = !bool;
+    
     }//GEN-LAST:event_jButton1ActionPerformed
 
     private void jTableAffichageMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_jTableAffichageMouseClicked
         if (jTableAffichage.rowAtPoint(evt.getPoint()) < docs.size())
         {
-            descriptionTextArea.setText(docs.get(jTableAffichage.rowAtPoint(evt.getPoint())).get("description", String.class));
-            commentaireList.setListData((String[])docs.get(jTableAffichage.rowAtPoint(evt.getPoint())).get("commentaires", ArrayList.class).toArray(new String[0]));
+            descriptionTextArea.setText((String)docs.get(jTableAffichage.rowAtPoint(evt.getPoint())).getOrDefault("description", ""));
+            commentaireList.setListData((String[])((ArrayList)docs.get(jTableAffichage.rowAtPoint(evt.getPoint())).getOrDefault("commentaires", "")).toArray(new String[0]));
             ArrayList note = docs.get(jTableAffichage.rowAtPoint(evt.getPoint())).get("notes", ArrayList.class);
             double s = 0;
             for (Object n : note)
@@ -597,21 +610,34 @@ public class IHM extends javax.swing.JFrame {
     private void jButton4ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton4ActionPerformed
         bb = true;
         DefaultTableModel dm = (DefaultTableModel)jTableAffichage.getModel();
+        Document doc = docs.get(displayed());
         dm.removeRow(jTableAffichage.getSelectedRow());
         jTableAffichage.setModel(dm);
+        d.deleteOne(Filters.eq("titre", doc.getString("titre")));
         bb = false;
     }//GEN-LAST:event_jButton4ActionPerformed
 
     private void jButton5ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton5ActionPerformed
-        Document doc = new Document();
-       
-        for (int i = 0; i < jTableAffichage.getColumnCount(); i++)
-        {
-           if (!(jTableAffichage.getValueAt(jTableAffichage.getRowCount() - 1, i) == null))
+    Document doc = new Document();
+    String s; 
+
+    for (int i = 0; i < jTableAffichage.getColumnCount(); i++)
+    {
+       if (!(jTableAffichage.getValueAt(jTableAffichage.getRowCount() - 1, i) == null))
+       {
+           s = jTableAffichage.getValueAt(jTableAffichage.getRowCount() - 1, i).toString();
+           if (s.charAt(0) == '[' && s.charAt(s.length() - 1) == ']')
+           {
+                List l = Arrays.asList(s.replaceAll("\\[", "").replaceAll("\\]", "").split(", "));
+                doc.append(cols.get(i), l);
+           }
+           else
                doc.append(cols.get(i), jTableAffichage.getValueAt(jTableAffichage.getRowCount() - 1, i));
-        }
-        doc.append("description", descriptionTextArea.getText());
-        d.insertOne(doc);
+       }
+    }
+    doc.append("description", descriptionTextArea.getText());
+    doc.append("genre", genreComboBox.getSelectedItem().toString());
+    d.insertOne(doc);
     }//GEN-LAST:event_jButton5ActionPerformed
 
     private void jButton3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton3ActionPerformed
