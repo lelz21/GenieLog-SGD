@@ -35,5 +35,38 @@ public class IHMTest {
         assertEquals(prevVisibleJ3,!vue.jButton3.isVisible());
         assertEquals(prevVisibleJ4,!vue.jButton4.isVisible());
         assertEquals(prevEnableGo,!vue.rechercheButton.isEnabled());
-    } 
+    }
+    @Test
+    public void testGoClic()
+    {
+        vue.rechercheButton.doClick();
+        int n = vue.docs.size();
+        assertEquals(vue.jTableAffichage.getModel().getRowCount(), n);
+    }
+    @Test
+    public void testPlusClic()
+    {
+        
+        int n = vue.jTableAffichage.getModel().getRowCount();
+        vue.jButton3.doClick();
+        assertEquals(vue.jTableAffichage.getModel().getRowCount(), n + 1);
+    }
+    @Test
+    public void testMoinsClic()
+    {
+        int n = vue.jTableAffichage.getModel().getRowCount();
+        vue.jTableAffichage.changeSelection(0, 0, false, false);
+        vue.jButton4.doClick();
+        assertEquals(vue.jTableAffichage.getModel().getRowCount(), n - 1);
+    }
+    @Test
+    public void testComment()
+    {
+        vue.commentaireTextArea.setText("Test");
+        int n = vue.commentaireList.getModel().getSize();
+        vue.jTableAffichage.changeSelection(0, 0, false, false);
+        
+        vue.jButton2.doClick();
+        assertEquals(vue.commentaireList.getModel().getSize(), n + 1);
+    }
 }

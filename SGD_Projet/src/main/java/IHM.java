@@ -61,8 +61,8 @@ public class IHM extends javax.swing.JFrame {
         char [] pass = new char[10];
         String s="vb394093"; pass = s.toCharArray();
         MongoCredential credential = MongoCredential.createCredential("vb394093", "vb394093", pass);
-        MongoClient client = new MongoClient(new ServerAddress("mongo", 27017), Arrays.asList(credential));
-        //MongoClient client = new MongoClient(new ServerAddress("localhost", 27017), Arrays.asList(credential));
+        //MongoClient client = new MongoClient(new ServerAddress("mongo", 27017), Arrays.asList(credential));
+        MongoClient client = new MongoClient(new ServerAddress("localhost", 27017), Arrays.asList(credential));
         MongoDatabase db = client.getDatabase("vb394093");
         d = db.getCollection("Sgd_jeu");
         FindIterable fi = d.find(Filters.eq("genre", "jeu"));
@@ -702,12 +702,12 @@ public class IHM extends javax.swing.JFrame {
     private javax.swing.JCheckBox PcCheckBox;
     private javax.swing.JCheckBox PsCheckBox;
     private javax.swing.JCheckBox XBoxCheckBox;
-    private javax.swing.JList<String> commentaireList;
-    private javax.swing.JTextArea commentaireTextArea;
+    public javax.swing.JList<String> commentaireList;
+    public javax.swing.JTextArea commentaireTextArea;
     private javax.swing.JTextArea descriptionTextArea;
     private javax.swing.JComboBox<String> genreComboBox;
     public javax.swing.JButton jButton1;
-    private javax.swing.JButton jButton2;
+    public javax.swing.JButton jButton2;
     public javax.swing.JButton jButton3;
     public javax.swing.JButton jButton4;
     private javax.swing.JButton jButton5;
@@ -721,7 +721,7 @@ public class IHM extends javax.swing.JFrame {
     private javax.swing.JScrollPane jScrollPane4;
     private javax.swing.JSlider jSlider1;
     private javax.swing.JSlider jSlider2;
-    private javax.swing.JTable jTableAffichage;
+    public javax.swing.JTable jTableAffichage;
     private javax.swing.JTextField jTextField1;
     private javax.swing.JComboBox<String> nbJoueurComboBox;
     public javax.swing.JButton rechercheButton;
