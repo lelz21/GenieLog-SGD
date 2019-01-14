@@ -1,8 +1,11 @@
 
 import java.awt.AWTEvent;
 import java.awt.Event;
+import org.junit.After;
+import org.junit.AfterClass;
 import org.junit.Before;
 import static org.junit.Assert.*;
+import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
 /*
@@ -17,9 +20,21 @@ import org.junit.Test;
  */
 public class IHMTest {
     static IHM vue;
+
+    @BeforeClass
+    public static void setUpClass() throws Exception {
+    }
+
+    @AfterClass
+    public static void tearDownClass() throws Exception {
+    }
     @Before
     public void setUp() {
         vue = new IHM();
+    }
+
+    @After
+    public void tearDown() throws Exception {
     }
     
     @Test
@@ -68,5 +83,24 @@ public class IHMTest {
         
         vue.jButton2.doClick();
         assertEquals(vue.commentaireList.getModel().getSize(), n + 1);
+    }
+    @Test
+    public void testSlider()
+    {
+        vue.jSlider2.setValue(5);
+        String s = vue.jLabel3.getText();
+        int val = Integer.parseInt(s);
+        assertEquals(5, val);
+    }
+    @Test
+    public void testJTable()
+    {
+        vue.jTableAffichage.changeSelection(0, 0, false, false);
+        String expected = vue.docs.get(0).getString("titre");
+        int x = vue.jTableAffichage.getSelectedRow();
+        int y = vue.jTableAffichage.getSelectedColumn();
+        String actual = (String)vue.jTableAffichage.getModel().getValueAt(x, y);
+        System.out.println(expected + " " + actual);
+        assertEquals(expected, actual);
     }
 }

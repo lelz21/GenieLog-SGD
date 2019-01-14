@@ -9,6 +9,7 @@ import com.mongodb.MongoCredential;
 import com.mongodb.ServerAddress;
 import com.mongodb.client.AggregateIterable;
 import com.mongodb.client.FindIterable;
+import com.mongodb.client.MapReduceIterable;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoCursor;
 import com.mongodb.client.MongoDatabase;
@@ -53,9 +54,13 @@ public class IHM extends javax.swing.JFrame {
     public boolean bb=false;
     public final ArrayList<String> cols;
     public ArrayList<Document> docs;
+    public ArrayList<Document> notes;
+    public final String map = "function(){ if (this.genre == \"jeu\") { for (var i = 0; i < this.notes.length; i++) {emit(this.titre, this.notes[i]);}}}";
+    public final String reduce = "function(keys, values) {return Array.avg(values);}";
     public IHM() {
         cols = new ArrayList<>(Arrays.asList("titre", "date", "editeur", "prix", "serie", "extensions", "pegi", "nb_joueurs", "plateformes", "type"));
         docs = new ArrayList<Document>();
+        notes = new ArrayList<Document>();
         initComponents();
         
         char [] pass = new char[10];
@@ -66,6 +71,7 @@ public class IHM extends javax.swing.JFrame {
         MongoDatabase db = client.getDatabase("vb394093");
         d = db.getCollection("Sgd_jeu");
         FindIterable fi = d.find(Filters.eq("genre", "jeu"));
+        d.mapReduce(map, reduce).into(notes);
         MongoCursor mc = fi.iterator();
         recherche();
         setTable((int)d.count(Filters.eq("genre", "jeu")), 0);
@@ -83,6 +89,7 @@ public class IHM extends javax.swing.JFrame {
     public int recherche()
     {
         docs.clear();
+        notes.clear();
         Bson frech = Aggregates.match(Filters.regex((String)rechercheComboBox.getSelectedItem(), jTextField1.getText(), "i"));
         
         Bson fgenre = Aggregates.match(Filters.eq("genre", (String)genreComboBox.getSelectedItem()));
@@ -112,6 +119,7 @@ public class IHM extends javax.swing.JFrame {
             System.out.println(docs.get(n));
             n++;
         }
+        d.mapReduce(map, reduce).into(notes);
         return n;
     }
     public void setTable(int n, int row)
@@ -144,11 +152,7 @@ public class IHM extends javax.swing.JFrame {
             if (listcomm != null)
             {
                 commentaireList.setListData((String[])listcomm.toArray(new String[0]));
-                ArrayList note = docs.get(row).get("notes", ArrayList.class);    
-                double s = 0;
-                for (Object o : note)
-                    s = s + Double.valueOf(o + "");
-                jLabel4.setText("Note : " + new DecimalFormat("##.##").format((s / note.size())));
+                jLabel4.setText("Note : " + new DecimalFormat("##.##").format(((notes.get(row).getDouble("value")))));
             }
             else
             {
@@ -589,11 +593,7 @@ public class IHM extends javax.swing.JFrame {
         {
             descriptionTextArea.setText(desc);
             commentaireList.setListData((String[])listcomm.toArray(new String[0]));
-            ArrayList note = docs.get(jTableAffichage.rowAtPoint(evt.getPoint())).get("notes", ArrayList.class);
-            double s = 0;
-            for (Object n : note)
-                s = s + Double.valueOf(n + "");
-            jLabel4.setText("Note : " + new DecimalFormat("##.##").format((s / note.size())));
+            jLabel4.setText("Note : " + new DecimalFormat("##.##").format((notes.get(jTableAffichage.rowAtPoint(evt.getPoint())).getDouble("value"))));
         }
         else
         {
@@ -610,11 +610,7 @@ public class IHM extends javax.swing.JFrame {
             d.updateOne(Filters.eq("titre", docs.get(displayed()).getString("titre")), Updates.push("notes", jSlider2.getValue()));
             recherche();
             commentaireList.setListData((String[])docs.get(displayed()).get("commentaires", ArrayList.class).toArray(new String[0]));
-            ArrayList note = docs.get(displayed()).get("notes", ArrayList.class);
-            double s = 0;
-            for (Object n : note)
-                s = s + Double.valueOf(n + "");
-            jLabel4.setText("Note : " + new DecimalFormat("##.##").format((s / note.size())));
+            jLabel4.setText("Note : " + new DecimalFormat("##.##").format((notes.get(displayed()).getDouble("value"))));
         }
     }//GEN-LAST:event_jButton2ActionPerformed
 
@@ -713,14 +709,14 @@ public class IHM extends javax.swing.JFrame {
     private javax.swing.JButton jButton5;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
-    private javax.swing.JLabel jLabel3;
+    public javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JScrollPane jScrollPane3;
     private javax.swing.JScrollPane jScrollPane4;
     private javax.swing.JSlider jSlider1;
-    private javax.swing.JSlider jSlider2;
+    public javax.swing.JSlider jSlider2;
     public javax.swing.JTable jTableAffichage;
     private javax.swing.JTextField jTextField1;
     private javax.swing.JComboBox<String> nbJoueurComboBox;
